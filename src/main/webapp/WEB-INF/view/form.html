@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name=viewport content="width=device-width">
+    <title>签到</title>
+    <link rel="stylesheet" href="http://demo.open.weixin.qq.com/jssdk/css/style.css?ts=1420774989">
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // 根据实际填写接口的配置地点
+            // 这里的接口地址是基于node-weixin配置的。
+            var url = "http://zxc.tunnel.qydev.com/sign/url";
+            // 当前的网页请求地址
+            var weixinUrl = location.href.split('#')[0];
+            $.ajax({
+                url: url, //这个地址是服务器配置JSSDK的地址
+                data: {           // 这个地址是发生jssdk调用的url地址
+                    // 用于服务器配置
+                    url: weixinUrl
+                }
+            }).success(function (json) {       // 获得服务器返回的配置信息
+                var data = json.data;
+                var config = {};
+                for (var k in json.data) {
+                    config[k] = json.data[k];
+                }
+                config.debug = true;// 添加你需要的JSSDK的权限
+                config.appId = config.appid;
+                config.jsApiList = ['getLocation'];
+                config.timestamp = parseInt(config.timestamp);
+                config.nonceStr = config.noncestr;
+                config.signature = config.signature
+                wx.config(config);
+                wx.ready(function () {
+                    alert("微信jssdk配置成功!");
+                    //地理位置
+                    wx.getLocation({
+                        success: function (res) {
+                            alert(JSON.stringify(res));
+                        },
+                        cancel: function (res) {
+                            alert('用户拒绝授权获取地理位置');
+                        }
+                    });
+
+                    //扫描二维码并返回结果
+                    wx.scanQRCode({
+                        needResult: 1,
+                        desc: 'scanQRCode desc',
+                        success: function (res) {
+                            alert(JSON.stringify(res));
+                        }
+                    });
+
+                });
+                wx.error(function (res) {
+                    alert(res.errMsg);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<div>
+    <ul>
+        <label>姓名：</label>
+        <input name="userName" type="text">
+    </ul>
+    <ul>
+        <label>性别：</label>
+        <input name="sex" type="radio" value="男" selected="selected">男
+        <input name="sex" type="radio" value="女" selected="selected">女
+    </ul>
+    <ul>
+        <label>部门：</label>
+        <select name="dept">
+            <option value="0">区域产品中心</option>
+            <option value="1">医院产品中心</option>
+        </select>
+    </ul>
+    <ul>
+        <input type="button" value="签到" id="btnSign">
+    </ul>
+</div>
+</body>
+</html>
